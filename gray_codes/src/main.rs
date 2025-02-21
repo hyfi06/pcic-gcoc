@@ -1,30 +1,33 @@
+/*
+000
+001
+011
+010
+110
+111
+101
+100
+ */
+
+
+
 fn main() {
-    // let vec:Vec<usize> = grayCodeIter(3).collect();
-    // println!("{:?}",vec);
-    let gray_code:usize = 0b010;
-    let max_num:usize = 1<<3;
-    println!("{:b}", gray_code);
-    println!("{:b}", (max_num - gray_code));
-    println!("{:b}", gray_code & (max_num - gray_code));
-    let lsb:usize = gray_code & (max_num - gray_code);
-    println!("{:b}", gray_code ^ lsb);
-    println!("{:b}", gray_code ^ (lsb<<1));
+    let max_num = 1<<4;
+    let nums= vec!(0..max_num).iter().for_each(|num|{
+        println!("{:b}", gc_rank(num));
+    });
 }
 
-pub fn grayCodeIter(n: usize) -> impl Iterator<Item = usize> {
-    let max_num: usize = 1 << n;
-    let mut gray_code: usize = 0;
-    return std::iter::from_fn(move || {
-        if gray_code >= max_num { return None };
-        let result = gray_code.clone();
-        let lsb: usize = gray_code & (max_num - 1 - gray_code);
-        println!("{:b}",lsb);
-        if !gray_code % 2 == 0 {
-            gray_code ^=  lsb;
-        } else {
-            gray_code ^= lsb << 1
-        }
+pub fn gc_rank(t: usize) -> usize {
+    t ^ (t >> 1)
+}
 
-        return Some(result);
-    });
+pub fn gc_unrank(gray_code: usize) -> usize {
+    let mut gray_code: usize = gray_code;
+    let mut mask = gray_code.clone();
+    while mask>0 {
+        mask >>= 1;
+        gray_code ^= mask
+    }
+    return gray_code;
 }
