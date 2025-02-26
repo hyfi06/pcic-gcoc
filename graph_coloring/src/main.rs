@@ -128,6 +128,7 @@ fn canonic_coloration(coloration: &mut Vec<usize>) -> String {
             nodes
                 .iter()
                 .for_each(|node| result.push_str(&format!("{}", node)));
+            result.push(' ');
         });
     return result.trim().to_string();
 }
