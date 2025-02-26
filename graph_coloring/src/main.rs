@@ -2,7 +2,8 @@ mod examples;
 mod graph;
 
 fn main() {
-    let graph: graph::Graph = examples::load_5();
+    let graph: graph::Graph = examples::load_10();
+    graph.print_ascii_graph(50);
     let n = graph.nodes.len();
     let mut coloration: Vec<usize> = vec![0; n];
     let mut solutions: Vec<String> = Vec::new();
@@ -21,8 +22,11 @@ fn backtrack_coloring(
     solutions: &mut Vec<String>,
 ) {
     if coloration.iter().all(|node| *node != 0) {
-        solutions.push(canonic_coloration(coloration));
-        println!("{}", canonic_coloration(coloration))
+        let canonic = canonic_coloration(coloration);
+        if !solutions.contains(&canonic) {
+            println!("{}", canonic);
+            solutions.push(canonic);
+        }
     }
     let neighbors: Vec<usize> = (0..n)
         .filter(|idx| graph.adjacency[coloring_node] >> idx & 1 == 1)
@@ -54,10 +58,14 @@ fn canonic_coloration(coloration: &mut Vec<usize>) -> String {
     });
     colors.sort();
     let mut result = String::new();
-    colors.iter().for_each(|nodes| {
-        nodes
-            .iter()
-            .for_each(|node| result.push_str(&format!("{}", node)));
-    });
-    return result;
+    colors
+        .iter()
+        .filter(|nodes| nodes.len() != 0)
+        .for_each(|nodes| {
+            nodes
+                .iter()
+                .for_each(|node| result.push_str(&format!("{}", node)));
+            result.push(' ');
+        });
+    return result.trim().to_string();
 }

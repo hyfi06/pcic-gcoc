@@ -37,16 +37,17 @@ impl Graph {
 
     pub fn print_ascii_graph(&self, size: usize) {
         let n = self.nodes.len();
-        let radius = size as f64 / 2.0;
-        let center = (radius, radius);
+        let radius_x = size as f64 / 2.0;
+        let radius_y = (2.0 / 3.0) * radius_x;
+        let center = (radius_x, radius_x);
 
         let mut grid = vec![vec![' '; size + 1]; size + 1];
-
         let mut positions = vec![];
+
         for i in 0..n {
             let angle = 2.0 * PI * (i as f64) / (n as f64);
-            let x = (center.0 + radius * angle.cos()).round() as usize;
-            let y = (center.1 + radius * angle.sin()).round() as usize;
+            let x = (center.0 + radius_x * angle.cos()).round() as usize;
+            let y = (center.1 + radius_y * angle.sin()).round() as usize;
             positions.push((x, y));
             grid[y][x] = char::from_digit(self.nodes[i] as u32, 36).unwrap_or('?');
         }
