@@ -24,7 +24,7 @@ fn backtrack_coloring(
     chromatic_num: &mut usize,
 ) {
     let num_colors = coloration.iter().filter(|&color| *color != 0).count();
-    if num_colors > *chromatic_num {
+    if num_colors >= *chromatic_num {
         return;
     }
 
@@ -37,14 +37,11 @@ fn backtrack_coloring(
         return;
     }
 
-    let colors: Vec<usize> = (0..num_colors + 1)
+    let colors: Vec<usize> = (0..(num_colors + 1).min(graph.adjacency.len()))
         .filter(|color| coloration[*color] & graph.adjacency[coloring_node] == 0)
         .collect();
 
     for color in colors {
-        if color >= coloration.len() {
-            continue;
-        }
         coloration[color] |= 1 << coloring_node;
         backtrack_coloring(graph, coloring_node + 1, coloration, chromatic_num);
         coloration[color] ^= 1 << coloring_node;
