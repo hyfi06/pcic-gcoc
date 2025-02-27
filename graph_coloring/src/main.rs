@@ -8,7 +8,7 @@ fn main() {
     graph.draw_ascii(100, 50);
     let n = graph.nodes.len();
     let mut chromatic_num = n.clone();
-    let mut coloration: Vec<usize> = Vec::new();
+    let mut coloration: Vec<usize> = vec![0; n];
 
     let start = Instant::now();
     backtrack_coloring(&graph, 0, &mut coloration, &mut chromatic_num);
@@ -23,7 +23,7 @@ fn backtrack_coloring(
     coloration: &mut Vec<usize>,
     chromatic_num: &mut usize,
 ) {
-    let num_colors = coloration.len();
+    let num_colors = coloration.iter().filter(|&color| *color != 0).count();
     if num_colors > *chromatic_num {
         return;
     }
@@ -37,22 +37,17 @@ fn backtrack_coloring(
         return;
     }
 
-    let mut colors: Vec<usize> = (0..num_colors)
+    let colors: Vec<usize> = (0..num_colors + 1)
         .filter(|color| coloration[*color] & graph.adjacency[coloring_node] == 0)
         .collect();
 
-    colors.push(num_colors);
-
     for color in colors {
-        if color == num_colors {
-            coloration.push(0);
+        if color >= coloration.len() {
+            continue;
         }
         coloration[color] |= 1 << coloring_node;
         backtrack_coloring(graph, coloring_node + 1, coloration, chromatic_num);
         coloration[color] ^= 1 << coloring_node;
-        if color == num_colors {
-            coloration.pop();
-        }
     }
 }
 
@@ -64,6 +59,7 @@ fn canonic_coloration(coloration: &mut Vec<usize>) -> String {
 
     coloration
         .iter()
+        .filter(|&color| *color != 0)
         .map(|color| {
             (0..n)
                 .filter(|node| (color >> *node) & 1 == 1)
