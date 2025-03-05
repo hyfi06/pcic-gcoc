@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use coloring::Coloration;
+use coloring::{ChromaticColoration, Coloration};
 mod coloring;
 mod examples;
 mod graph;
@@ -45,7 +45,7 @@ impl std::fmt::Display for LocalState {
 
 fn backtrack_coloring(graph: &graph::Graph) -> usize {
     let n = graph.adjacency.len();
-    let mut coloration = Coloration::new(n);
+    let mut coloration = ChromaticColoration::new(n);
     let mut chromatic_num = n;
     let mut visited_states = 0;
     let mut stack: Vec<LocalState> = vec![LocalState::from_tuple((0, 0, 0, 1))];
@@ -107,7 +107,7 @@ fn backtrack_coloring(graph: &graph::Graph) -> usize {
             }
         }
 
-        if visited_states < 100 && 27 < visited_states {
+        if false {
             println!("State {} {}", visited_states, local_state);
             println!("{:?}", stack);
             println!("{}", coloration);
