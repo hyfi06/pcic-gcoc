@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use coloring::{ChromaticColoration, Coloration};
+use coloring::{ChromaticColoration, Coloration, VertexColoring};
 mod coloring;
 mod examples;
 mod graph;
