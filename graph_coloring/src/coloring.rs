@@ -114,11 +114,13 @@ impl Coloration for VertexColoring {
     }
 
     fn get_chromatic_class(&self, color: usize) -> usize {
-        self.vertex_color
-            .iter()
-            .enumerate()
-            .filter(|&(_, v)| v ^ 1 << color == 0)
-            .fold(0, |acc, curr| acc | (1 << curr.0))
+        (0..self.vertex_color.len()).into_iter().fold(0, |acc, v| {
+            if self.vertex_color[v] ^ 1 << color == 0 {
+                acc | 1 << v
+            } else {
+                acc
+            }
+        })
     }
 }
 

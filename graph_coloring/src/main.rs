@@ -118,3 +118,68 @@ fn backtrack_coloring(graph: &graph::Graph) -> usize {
     println!("Num visited states:{}", visited_states);
     chromatic_num
 }
+
+fn backtrack_coloring_v(graph: &graph::Graph) -> usize {
+    let n = graph.adjacency.len();
+    let mut coloration = VertexColoring::new(n);
+    let mut chromatic_num = n;
+    let mut visited_states = 0;
+    let mut stack: Vec<LocalState> = vec![LocalState::from_tuple((0, 0, 0, 1))];
+
+    while let Some(local_state) = stack.pop() {
+        visited_states += 1;
+        for node in local_state.curr_node..n {
+            coloration.del_node_color(node, 0);
+        }
+        coloration.set_node_color(local_state.curr_node, local_state.curr_color);
+        let num_colors = coloration.count_colors();
+
+        if local_state.curr_node == n - 1 {
+            if num_colors < chromatic_num {
+                println!("{}", coloration);
+                println!("Numero cromático: {num_colors}");
+                chromatic_num = num_colors;
+            }
+        } else {
+            if let Some(curr_node_next_color) = (local_state.curr_color + 1
+                ..(local_state.max_color).min(chromatic_num - 1))
+                .find(|posible_color| {
+                    coloration.get_chromatic_class(*posible_color)
+                        & graph.adjacency[local_state.curr_node]
+                        == 0
+                })
+            {
+                stack.push(LocalState::from_tuple((
+                    local_state.curr_node,
+                    curr_node_next_color,
+                    local_state.curr_color,
+                    local_state.max_color,
+                )));
+            }
+            if let Some(next_node_first_color) =
+                (0..(num_colors + 1).min(chromatic_num - 1)).find(|posible_color| {
+                    coloration.get_chromatic_class(*posible_color)
+                        & graph.adjacency[local_state.curr_node + 1]
+                        == 0
+                })
+            {
+                stack.push(LocalState::from_tuple((
+                    local_state.curr_node + 1,
+                    next_node_first_color,
+                    next_node_first_color,
+                    num_colors + 1,
+                )));
+            }
+        }
+
+        if false {
+            println!("State {} {}", visited_states, local_state);
+            println!("{:?}", stack);
+            println!("{}", coloration);
+            println!("Chromatic {}, Colors {}", chromatic_num, num_colors);
+            println!("");
+        }
+    }
+    println!("Num visited states:{}", visited_states);
+    chromatic_num
+}
