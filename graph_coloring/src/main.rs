@@ -67,7 +67,7 @@ fn backtrack_coloring(graph: &graph::Graph) -> usize {
             coloration.del_node_color(local_state.curr_node, local_state.curr_color);
         } else {
             if let Some(curr_node_next_color) = (local_state.curr_color + 1
-                ..(local_state.max_color).min(chromatic_num))
+                ..(local_state.max_color).min(chromatic_num - 1))
                 .find(|posible_color| {
                     coloration.get_chromatic_class(*posible_color)
                         & graph.adjacency[local_state.curr_node]
@@ -90,7 +90,7 @@ fn backtrack_coloring(graph: &graph::Graph) -> usize {
             }
 
             if let Some(next_node_first_color) =
-                (0..(num_colors + 1).min(chromatic_num)).find(|posible_color| {
+                (0..(num_colors + 1).min(chromatic_num - 1)).find(|posible_color| {
                     coloration.get_chromatic_class(*posible_color)
                         & graph.adjacency[local_state.curr_node + 1]
                         == 0
