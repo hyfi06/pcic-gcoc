@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::graph::Graph;
 
 pub fn load_5() -> Graph {
