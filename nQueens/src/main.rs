@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::{ops::Not, time::Instant};
 
 fn main() {
     let n = 14;
@@ -20,14 +20,20 @@ fn nq(buff: &mut [usize], k: usize, solutions: &mut i32) {
         *solutions += 1;
         return;
     }
-    let positions: Vec<usize> = (0..n).filter(|x| !buff[0..k].contains(x)).collect();
-    for i in positions {
-        buff[k] = i;
-        if is_valid(buff, k) {
-            nq(buff, k + 1, solutions);
+    for i in 0..n {
+        if !buff[0..k].contains(&i) {
+            buff[k] = i;
+            if is_valid(buff, k) {
+                nq(buff, k + 1, solutions);
+            }
         }
     }
     buff[k] = 0;
+}
+
+fn nq_iter(n: usize) {
+    let mut buff = vec![0; n];
+    
 }
 
 fn is_valid(buff: &[usize], k: usize) -> bool {
