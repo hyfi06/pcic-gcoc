@@ -1,16 +1,17 @@
 use std::{ops::Not, time::Instant};
 
 fn main() {
-    let n = 14;
+    let n = 9;
     let mut buff = vec![0; n];
     let mut solutions: i32 = 0;
     let start = Instant::now();
     nq(&mut buff, 0, &mut solutions);
     let elapse = Instant::elapsed(&start);
-    // for sol in solutions.iter() {
-    //     println!("{:?}", sol);
-    //     tablero(sol);
-    // }
+    println!("{n} reinas: {} soluciones en {:?}", solutions, elapse);
+
+    let start = Instant::now();
+    solutions = nq_iter(n);
+    let elapse = Instant::elapsed(&start);
     println!("{n} reinas: {} soluciones en {:?}", solutions, elapse);
 }
 
@@ -31,9 +32,37 @@ fn nq(buff: &mut [usize], k: usize, solutions: &mut i32) {
     buff[k] = 0;
 }
 
-fn nq_iter(n: usize) {
+fn nq_iter(n: usize) -> i32 {
     let mut buff = vec![0; n];
-    
+    let mut solutions = 0;
+    let mut stack: Vec<(usize, usize)> = Vec::new();
+    stack.push((0, 0));
+    while let Some((col, row)) = stack.pop() {
+        if col == n - 1 {
+            solutions += 1;
+            continue;
+        }
+        for i in row..n {
+            if !buff[0..col].contains(&i) {
+                buff[col] = i;
+                if is_valid(&buff, col) {
+                    stack.push((col, i));
+                    break;
+                }
+            }
+        }
+        buff[col] = row;
+        for i in 0..n {
+            if !buff[0..col + 1].contains(&i) {
+                buff[col + 1] = i;
+                if is_valid(&buff, col + 1) {
+                    stack.push((col + 1, i));
+                    break;
+                }
+            }
+        }
+    }
+    solutions
 }
 
 fn is_valid(buff: &[usize], k: usize) -> bool {
