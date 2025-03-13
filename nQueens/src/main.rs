@@ -1,7 +1,7 @@
-use std::{ops::Not, time::Instant};
+use std::time::Instant;
 
 fn main() {
-    let n = 9;
+    let n = 8;
     let mut buff = vec![0; n];
     let mut solutions: i32 = 0;
     let start = Instant::now();
@@ -38,11 +38,12 @@ fn nq_iter(n: usize) -> i32 {
     let mut stack: Vec<(usize, usize)> = Vec::new();
     stack.push((0, 0));
     while let Some((col, row)) = stack.pop() {
+        buff[col] = row;
         if col == n - 1 {
             solutions += 1;
             continue;
         }
-        for i in row..n {
+        for i in row + 1..n {
             if !buff[0..col].contains(&i) {
                 buff[col] = i;
                 if is_valid(&buff, col) {
@@ -70,6 +71,7 @@ fn is_valid(buff: &[usize], k: usize) -> bool {
     for i in 0..k {
         if buff[i] == buff[k] || (buff[i] as isize - buff[k] as isize).abs() == (k - i) as isize {
             valid = false;
+            break;
         }
     }
     valid
@@ -82,7 +84,7 @@ fn tablero(buff: &[usize]) {
             if buff[i] == j {
                 print!("Q "); // Reina en la columna especificada
             } else {
-                print!(". ");
+                print!("* ");
             }
         }
         println!();
