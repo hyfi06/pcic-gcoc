@@ -1,5 +1,7 @@
 use std::time::Instant;
 
+mod tablero;
+
 fn main() {
     let n = 8;
     let mut buff = vec![0; n];
