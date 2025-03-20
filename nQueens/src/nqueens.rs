@@ -3,7 +3,7 @@ use crate::board::Board;
 use bitmaps::{Bits, BitsImpl};
 use rayon::prelude::*;
 
-pub const N: usize = 19;
+pub const N: usize = 17;
 const D: usize = N + N - 1;
 
 #[derive(Debug)]
@@ -33,6 +33,7 @@ where
             pool_board: vec![],
         }
     }
+
     pub fn backtrack(&mut self, curr_col: usize) {
         self.seen_vertices += 1;
         if self.max_depth < N && curr_col == self.max_depth {
@@ -59,6 +60,7 @@ where
     fn proceses_leaf(&mut self) {
         self.seen_leaves += 1;
     }
+
     pub fn run_parallel(multiplicity: usize) -> usize {
         let mut nq = Self::new();
         let mut level: usize = 0;

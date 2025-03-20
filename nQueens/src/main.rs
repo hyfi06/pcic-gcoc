@@ -22,7 +22,7 @@ fn main() {
     let seen_leaves = NQueens::run_parallel(20);
     let elapse = Instant::elapsed(&start);
     println!(
-        "{} reinas: {} soluciones en {:?}",
+        "{} reinas: {} soluciones en {:.2?}",
         nqueens::N,
         seen_leaves,
         elapse
