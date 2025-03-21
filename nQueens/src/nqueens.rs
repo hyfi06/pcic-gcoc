@@ -3,7 +3,7 @@ use crate::board::Board;
 use bitmaps::{Bits, BitsImpl};
 use rayon::prelude::*;
 
-pub const N: usize = 17;
+pub const N: usize = 16;
 const D: usize = N + N - 1;
 
 #[derive(Debug)]
