@@ -1,0 +1,9 @@
+[package]
+name = "identifying_codes"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bitmaps = "3.2.1"
+hypercube = { version = "0.1.0", path = "../hypercube" }
+rand = "0.9.1"
