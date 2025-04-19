@@ -9,11 +9,9 @@
 100
  */
 
-
-
 fn main() {
-    let max_num = 1<<4;
-    let nums= vec!(0..max_num).iter().for_each(|num|{
+    let max_num = 1 << 4;
+    (0..max_num).into_iter().for_each(|num| {
         println!("{:b}", gc_rank(num));
     });
 }
@@ -25,7 +23,7 @@ pub fn gc_rank(t: usize) -> usize {
 pub fn gc_unrank(gray_code: usize) -> usize {
     let mut gray_code: usize = gray_code;
     let mut mask = gray_code.clone();
-    while mask>0 {
+    while mask > 0 {
         mask >>= 1;
         gray_code ^= mask
     }
