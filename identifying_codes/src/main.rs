@@ -1,11 +1,13 @@
+use std::ops::BitOr;
+
 use bitmaps::Bitmap;
 use hypercube;
 use rand::prelude::*;
 
-const DIM: usize = 3;
+const DIM: usize = 8;
 const SIZE: usize = 2_u32.pow(DIM as u32) as usize;
 type MyBitmap = Bitmap<SIZE>;
-type Graph = hypercube::Hypercube3;
+type Graph = hypercube::Hypercube8;
 
 #[derive(Debug, Clone)]
 struct IdentifyingCodesProblem {
@@ -16,13 +18,49 @@ struct IdentifyingCodesProblem {
 }
 
 impl IdentifyingCodesProblem {
-    fn update_best_choose(&mut self) {
+    fn new(graph: Graph) -> Self {
+        let mut graph = graph;
+        for i in 0..graph.adjacency.len() {
+            graph.adjacency[i].set(i, true);
+            graph.edges.push((i, i));
+        }
+        Self {
+            graph,
+            curr_choose: MyBitmap::mask(SIZE),
+            next_choose: MyBitmap::mask(SIZE),
+            best_choose: MyBitmap::mask(SIZE),
+        }
+    }
+    fn dominate_next(&self) -> bool {
+        self.next_choose
+            .into_iter()
+            .fold(MyBitmap::new(), |acc, curr| {
+                acc.bitor(self.graph.adjacency[curr])
+            })
+            == MyBitmap::mask(SIZE)
+    }
+
+    fn separate_next(&self) -> bool {
+        for i in 0..self.graph.adjacency.len() {
+            for j in (i + 1)..self.graph.adjacency.len() {
+                let code_i = self.next_choose & self.graph.adjacency[i];
+                let code_j = self.next_choose & self.graph.adjacency[j];
+                if code_i == code_j {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+}
+impl IdentifyingCodesProblem {
+    fn replace_best_with_next(&mut self) {
         self.best_choose = self.next_choose.clone();
     }
-    fn update_curr_choose(&mut self) {
+    fn replace_curr_with_next(&mut self) {
         self.curr_choose = self.next_choose.clone();
     }
-    fn update_next_choose(&mut self) {
+    fn update_next(&mut self) {
         let mut rng = rand::rng();
         let distance = rng.random_range(1..=3);
         self.next_choose = self.curr_choose.clone();
@@ -31,43 +69,54 @@ impl IdentifyingCodesProblem {
             self.next_choose.set(idx, !self.next_choose.get(idx));
         }
     }
-    fn is_valid_next_choose(&self) {
-        
+    fn is_next_valid(&self) -> bool {
+        self.dominate_next() && self.separate_next()
     }
-    fn best_choose_score(&self) -> u32 {
+    fn best_score(&self) -> u32 {
         self.best_choose.len() as u32
     }
-    fn curr_choose_score(&self) -> u32 {
+    fn curr_score(&self) -> u32 {
         self.curr_choose.len() as u32
     }
-    fn next_choose_score(&self) -> u32 {
+    fn next_score(&self) -> u32 {
         self.next_choose.len() as u32
     }
 
-    fn simulated_annealing(&self, initial_temp: f64, cooling_rate: f64, max_iterations: usize) {
+    fn simulated_annealing(&mut self, initial_temp: f64, cooling_rate: f64, max_iterations: usize) {
         let mut rng = rand::rng();
         let mut temperature = initial_temp;
-        
+
         for _ in 0..max_iterations {
-            self.best_choose_score();
-            let new_energy = objective_function(new_x);
-            let delta_energy = new_energy - current_energy;
-    
-            if delta_energy < 0.0 || rng.gen::<f64>() < (-delta_energy / temperature).exp() {
-                current_x = new_x;
-                current_energy = new_energy;
-                if current_energy < best_energy {
-                    best_x = current_x;
-                    best_energy = current_energy;
+            self.update_next();
+            let next_choose_score = self.next_score() as f64;
+            let curr_choose_score = self.curr_score() as f64;
+            let delta_score = next_choose_score - curr_choose_score;
+            let p = (-delta_score / temperature as f64).exp();
+            if self.is_next_valid() && (next_choose_score < curr_choose_score || rng.random_bool(p))
+            {
+                self.replace_curr_with_next();
+                if next_choose_score < self.best_score().into() {
+                    self.replace_best_with_next();
+                    println!(
+                        "Temp: {:.4}, P {:.4}, Best: {:?} Score: {}",
+                        temperature,
+                        p,
+                        self.best_choose,
+                        self.best_score()
+                    );
                 }
             }
-    
             temperature *= cooling_rate;
         }
     }
-
 }
 
 fn main() {
-    Bitmap::<2>::new().as_value();
+    let mut problem = IdentifyingCodesProblem::new(Graph::new());
+    problem.simulated_annealing(10_000.0, 0.9999, 1000_000);
+    println!(
+        "Best:{:?}, Score: {}",
+        problem.best_choose.as_value(),
+        problem.best_score()
+    )
 }
