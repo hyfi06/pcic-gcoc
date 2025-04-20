@@ -73,7 +73,7 @@ impl IdentifyingCodesProblem {
     }
     fn update_next(&mut self) {
         let mut rng = rand::rng();
-        let distance = rng.random_range(1..=4);
+        let distance = rng.random_range(1..=5);
         self.next_choose = self.curr_choose.clone();
         for _ in 0..distance {
             let idx = rng.random_range(0..SIZE);
