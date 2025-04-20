@@ -110,12 +110,6 @@ impl IdentifyingCodesProblem {
                 }
                 if next_choose_score < self.best_score().into() {
                     self.replace_best_with_next();
-                    println!(
-                        "Temp: {:.4}, Best: {:?} Score: {}",
-                        temperature,
-                        self.best_choose,
-                        self.best_score()
-                    );
                 }
             }
             temperature *= cooling_rate;
@@ -172,6 +166,8 @@ fn main() {
     );
 
     for (choose, score) in problem.pool.into_iter() {
-        println!("{:?} {score}", choose.as_value())
+        if score <= problem.best_choose + 2 {
+            println!("{score} {:?} {:?}", choose, choose.as_value())
+        }
     }
 }
