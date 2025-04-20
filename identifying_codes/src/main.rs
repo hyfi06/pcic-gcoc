@@ -164,9 +164,10 @@ fn main() {
         problem.best_score(),
         elapse
     );
+    let best_score = problem.best_score();
 
     for (choose, score) in problem.pool.into_iter() {
-        if score <= problem.best_choose + 2 {
+        if score <= best_score + 2 {
             println!("{score} {:?} {:?}", choose, choose.as_value())
         }
     }
