@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, ops::BitOr};
+use std::collections::HashMap;
 
 use bitmaps::Bitmap;
 use hypercube;
@@ -18,7 +18,7 @@ struct IdentifyingCodesProblem {
     seen_vertices: usize,
     seen_leaves: usize,
     level: usize,
-    pool: Vec<(u32, MyBitmap)>,
+    pool: HashMap<MyBitmap, u32>,
 }
 
 impl IdentifyingCodesProblem {
@@ -36,14 +36,14 @@ impl IdentifyingCodesProblem {
             seen_vertices: 0,
             seen_leaves: 0,
             level: 0,
-            pool: Vec::new(),
+            pool: HashMap::new(),
         }
     }
     fn dominate_next(&self) -> bool {
         self.next_choose
             .into_iter()
             .fold(MyBitmap::new(), |acc, curr| {
-                acc.bitor(self.graph.adjacency[curr])
+                acc | self.graph.adjacency[curr]
             })
             == MyBitmap::mask(SIZE)
     }
@@ -69,12 +69,11 @@ impl IdentifyingCodesProblem {
         self.curr_choose = self.next_choose.clone();
     }
     fn push_next_to_pool(&mut self) {
-        self.pool
-            .push((self.next_score(), self.next_choose.clone()));
+        self.pool.insert(self.next_choose, self.next_score());
     }
     fn update_next(&mut self) {
         let mut rng = rand::rng();
-        let distance = rng.random_range(1..=3);
+        let distance = rng.random_range(1..=4);
         self.next_choose = self.curr_choose.clone();
         for _ in 0..distance {
             let idx = rng.random_range(0..SIZE);
@@ -112,9 +111,8 @@ impl IdentifyingCodesProblem {
                 if next_choose_score < self.best_score().into() {
                     self.replace_best_with_next();
                     println!(
-                        "Temp: {:.4}, P {:.4}, Best: {:?} Score: {}",
+                        "Temp: {:.4}, Best: {:?} Score: {}",
                         temperature,
-                        p,
                         self.best_choose,
                         self.best_score()
                     );
@@ -163,17 +161,17 @@ impl IdentifyingCodesProblem {
 
 fn main() {
     let mut problem = IdentifyingCodesProblem::new(Graph::new());
-    problem.simulated_annealing(10_000.0, 0.9999, 1000_000);
+    let start = std::time::Instant::now();
+    problem.simulated_annealing(10_000.0, 0.9999, 1_000_000);
+    let elapse = start.elapsed();
     println!(
-        "Best:{:?}, Score: {}",
+        "Best:{:?}, Score: {} in {:.2?}",
         problem.best_choose.as_value(),
-        problem.best_score()
+        problem.best_score(),
+        elapse
     );
-    println!(
-        "{:?}",
-        problem
-            .pool
-            .iter()
-            .filter(|(score, _)| *score <= problem.best_score() + 2)
-    );
+
+    for (choose, score) in problem.pool.into_iter() {
+        println!("{:?} {score}", choose.as_value())
+    }
 }
