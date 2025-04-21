@@ -17,7 +17,6 @@ struct IdentifyingCodesProblem {
     best_choose: MyBitmap,
     seen_vertices: usize,
     seen_leaves: usize,
-    level: usize,
     pool: HashMap<MyBitmap, u32>,
 }
 
@@ -35,7 +34,6 @@ impl IdentifyingCodesProblem {
             best_choose: MyBitmap::mask(SIZE),
             seen_vertices: 0,
             seen_leaves: 0,
-            level: 0,
             pool: HashMap::new(),
         }
     }
@@ -64,6 +62,12 @@ impl IdentifyingCodesProblem {
 impl IdentifyingCodesProblem {
     fn replace_best_with_next(&mut self) {
         self.best_choose = self.next_choose.clone();
+        // println!(
+        //     "{} {:?} {:?}",
+        //     self.best_score(),
+        //     self.best_choose,
+        //     self.best_choose.as_value()
+        // );
     }
     fn replace_curr_with_next(&mut self) {
         self.curr_choose = self.next_choose.clone();
@@ -73,7 +77,7 @@ impl IdentifyingCodesProblem {
     }
     fn update_next(&mut self) {
         let mut rng = rand::rng();
-        let distance = rng.random_range(1..=5);
+        let distance = rng.random_range(1..=4);
         self.next_choose = self.curr_choose.clone();
         for _ in 0..distance {
             let idx = rng.random_range(0..SIZE);
@@ -121,18 +125,14 @@ impl IdentifyingCodesProblem {
     fn update_count_seen_vertices(&mut self) {
         self.seen_vertices += 1;
     }
-    fn is_leaf(&self) -> bool {
-        self.level == self.graph.adjacency.len()
-    }
     fn set(&mut self, idx: usize) {
         self.next_choose.set(idx, false);
     }
     fn unset(&mut self, idx: usize) {
         self.next_choose.set(idx, true);
     }
-    fn available_chooses(&self) -> MyBitmap {
-        let level = self.next_choose.last_false_index().unwrap_or(0);
-        let mut result = self.next_choose.clone();
+    fn available_chooses(&self, level: usize) -> MyBitmap {
+        let mut result: MyBitmap = self.next_choose.clone();
         for i in 0..level {
             result.set(i, false);
         }
@@ -143,10 +143,10 @@ impl IdentifyingCodesProblem {
         if self.next_score() < self.best_score() {
             self.replace_best_with_next();
         }
-        for idx in self.available_chooses().into_iter() {
+        for idx in self.available_chooses(level).into_iter() {
             self.set(idx);
             if self.is_next_valid() {
-                self.minimal_backtrack(self.next_choose.last_false_index().unwrap_or(level));
+                self.minimal_backtrack(idx);
             }
             self.unset(idx)
         }
@@ -166,9 +166,34 @@ fn main() {
     );
     let best_score = problem.best_score();
 
-    for (choose, score) in problem.pool.into_iter() {
-        if score <= best_score + 2 {
+    for (choose, score) in problem.pool.iter() {
+        if *score <= best_score + 2 {
             println!("{score} {:?} {:?}", choose, choose.as_value())
         }
     }
+
+    let mut start_choose = problem.best_choose.clone();
+    let mut invert_choose = problem.best_choose.clone();
+    invert_choose.invert();
+    let chooses = invert_choose
+        .into_iter()
+        .choose_multiple(&mut rand::rng(), 5);
+    for idx in chooses {
+        start_choose.set(idx, true);
+    }
+
+    let mut problem = IdentifyingCodesProblem::new(Graph::new());
+    problem.next_choose = start_choose;
+
+    let start = std::time::Instant::now();
+    problem.minimal_backtrack(0);
+    let elapse = start.elapsed();
+
+    println!(
+        "Backtrack Best:{:?}, Score: {} in {:.2?} over {}",
+        problem.best_choose.as_value(),
+        problem.best_score(),
+        elapse,
+        problem.seen_leaves,
+    );
 }
